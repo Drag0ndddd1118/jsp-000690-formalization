@@ -19,40 +19,14 @@
   Formalizer: Drag0ndddd1118 (Qin Zhao)
 -/
 
-set_option maxRecDepth 2000000
+import Challenge
 
 namespace JSP000690
 
-/-- The vertex set V = {1, 2, ..., 9}. -/
-def V : List Nat := [1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-/-- The edge set of 22 triples from Ruiliang Li (arXiv:2512.24850, Section 4.1). -/
-def E : List (Nat × Nat × Nat) := [
-  (1, 2, 3), (1, 2, 9), (1, 3, 8), (1, 4, 6), (1, 4, 8), (1, 4, 9),
-  (1, 5, 7), (1, 5, 8), (1, 5, 9), (1, 6, 7),
-  (2, 3, 6), (2, 3, 7), (2, 4, 9), (2, 5, 9), (2, 6, 7),
-  (3, 4, 8), (3, 5, 8), (3, 6, 7),
-  (4, 6, 8), (4, 6, 9),
-  (5, 7, 8), (5, 7, 9)
-]
-
-/-- Validation that an edge is a strictly ordered 3-element subset of V. -/
-def isValidEdge (e : Nat × Nat × Nat) : Bool :=
-  let (a, b, c) := e
-  a ∈ V && b ∈ V && c ∈ V && a < b && b < c
+set_option maxRecDepth 2000000
 
 /-- Theorem: All 22 edges are valid 3-uniform edges on V. -/
 theorem three_uniform : E.all isValidEdge = true := by rfl
-
-/-- Degree of a vertex v in hypergraph H = (V, E). -/
-def degree (v : Nat) : Nat :=
-  (E.filter (fun (a, b, c) => a == v || b == v || c == v)).length
-
-/-- Minimum degree δ(H). -/
-def minDegree : Nat :=
-  match V.map degree with
-  | [] => 0
-  | d :: ds => ds.foldl Nat.min d
 
 /-- Degree computation: vertex 1 has degree 10, and vertices 2 through 9 have degree 7. -/
 theorem degrees_witness :
@@ -65,63 +39,15 @@ theorem min_degree_eq_seven : minDegree = 7 := by rfl
 
 theorem min_degree_ge_seven : minDegree ≥ 7 := by decide
 
-/-- Bitwise representation of a 2-colouring c ∈ [0, 512):
-    Vertex v ∈ {1..9} receives colour 1 if bit (v - 1) of c is 1, and 0 otherwise. -/
-def getColor (c : Nat) (v : Nat) : Bool :=
-  ((c >>> (v - 1)) &&& 1) == 1
-
-/-- An edge (a, b, d) is monochromatic under colouring c if all 3 vertices have the same colour. -/
-def isMono (c : Nat) (e : Nat × Nat × Nat) : Bool :=
-  let (a, b, d) := e
-  let ca := getColor c a
-  let cb := getColor c b
-  let cd := getColor c d
-  (ca == cb) && (cb == cd)
-
-/-- A colouring c is proper for an edge list if no edge in the list is monochromatic. -/
-def isProper2Coloring (c : Nat) (edges : List (Nat × Nat × Nat)) : Bool :=
-  edges.all (fun e => !isMono c e)
-
-/-- Checks whether any of the 2^9 = 512 colourings is a proper 2-colouring for `edges`. -/
-def anyProper2Coloring (edges : List (Nat × Nat × Nat)) : Bool :=
-  (List.range 512).any (fun c => isProper2Coloring c edges)
-
 /-- Theorem: H is not 2-colourable (χ(H) ≥ 3).
     Exhaustively checked over all 512 possible 2-colourings. -/
 theorem not_two_colorable : anyProper2Coloring E = false := by rfl
 
-/-- Explicit 3-colouring ψ : V → {1, 2, 3}.
-    Partitions V into:
-      Colour 1: {1, 2, 4, 5}
-      Colour 2: {3, 6, 8, 9}
-      Colour 3: {7} -/
-def psi (v : Nat) : Nat :=
-  if v == 1 || v == 2 || v == 4 || v == 5 then 1
-  else if v == 3 || v == 6 || v == 8 || v == 9 then 2
-  else 3
-
-def isMono3 (col : Nat → Nat) (e : Nat × Nat × Nat) : Bool :=
-  let (a, b, d) := e
-  col a == col b && col b == col d
-
-def proper3Coloring : Bool :=
-  E.all (fun e => !isMono3 psi e)
-
 /-- Theorem: H is 3-colourable (χ(H) ≤ 3), witnessed by ψ. -/
 theorem three_colorable : proper3Coloring = true := by rfl
 
-/-- Check that deleting any edge e ∈ E makes the remaining hypergraph 2-colourable. -/
-def allEdgesCritical : Bool :=
-  E.all (fun e => anyProper2Coloring (E.filter (· != e)))
-
 /-- Theorem: H is edge-critical for 3-chromaticity. -/
 theorem edge_critical : allEdgesCritical = true := by rfl
-
-/-- Check that deleting any vertex v ∈ V (and incident edges) makes the subhypergraph 2-colourable. -/
-def allVerticesCritical : Bool :=
-  V.all (fun v =>
-    let Ev := E.filter (fun (a, b, c) => a != v && b != v && c != v)
-    anyProper2Coloring Ev)
 
 /-- Theorem: H is vertex-critical for 3-chromaticity. -/
 theorem vertex_critical : allVerticesCritical = true := by rfl
@@ -145,6 +71,6 @@ theorem jsp_000690_affirmative :
     allVerticesCritical = true := by
   refine ⟨by rfl, by decide, by rfl, by rfl, by rfl, by rfl⟩
 
-#print axioms jsp_000690_affirmative
-
 end JSP000690
+
+#print axioms JSP000690.jsp_000690_affirmative

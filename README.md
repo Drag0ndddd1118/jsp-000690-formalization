@@ -62,3 +62,52 @@ Axiom verification confirms only standard core Lean axioms:
 ## Contributor
 
 - Formalization: Qin Zhao ([Drag0ndddd1118](https://github.com/Drag0ndddd1118))
+
+## Statement of record — `Challenge.lean`
+
+`Challenge.lean` declares the definitions the problem is phrased with and the proposition
+`JSP000690.jsp000690Statement`. It proves nothing, so a reviewer has only to read that one file to judge *what* has
+been claimed.
+
+```lean
+  -- (1) 3-uniform:
+      E.all isValidEdge = true ∧
+      -- (2) Minimum degree at least 7:
+      minDegree ≥ 7 ∧
+      -- (3) Not 2-colourable:
+      anyProper2Coloring E = false ∧
+      -- (4) 3-colourable (hence chromatic number χ = 3):
+      proper3Coloring = true ∧
+      -- (5) Edge-critical: deleting any edge allows a 2-colouring:
+      allEdgesCritical = true ∧
+      -- (6) Vertex-critical: deleting any vertex allows a 2-colouring:
+      allVerticesCritical = true
+```
+
+## Proof — `Submission.lean`
+
+`Submission.lean` imports `Challenge.lean`, so the proof and the statement refer to the *same*
+`JSP000690.jsp000690Statement` constant and cannot drift apart. The top-level result is
+
+```lean
+JSP000690.jsp_000690_affirmative
+```
+
+It depends on `Quot.sound`, `propext` only, and the file contains no `sorry`, no `admit` and no `axiom`
+declaration. `check.py` type-checks the bridge
+
+```
+example : JSP000690.jsp000690Statement := JSP000690.jsp_000690_affirmative
+```
+
+and re-runs the axiom audit.
+
+## Build and check
+
+```sh
+lake build
+python3 check.py
+```
+
+Toolchain: `leanprover/lean4:v4.34.0` (commit `293d5d0c0c3f3dded4688b3ccd6a33939ac5102b`). The development is self-contained:
+it uses Lean core only and depends on no external library.
